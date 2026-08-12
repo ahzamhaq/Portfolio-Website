@@ -1,0 +1,400 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Room (behind the newspaper) ---------- */
+/* Dark, subtly wooden backdrop so the paper visibly sits on a surface. */
+body {
+  background-color: #1b120a;
+  background-image:
+    radial-gradient(1400px 900px at 50% 20%, #3a2716 0%, #1a0f07 60%, #0e0805 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' seed='11'/><feColorMatrix values='0 0 0 0 0.08  0 0 0 0 0.05  0 0 0 0 0.02  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23w)'/></svg>");
+  background-blend-mode: normal, multiply;
+  color: #1a1611;
+  font-family: 'Lora', Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  min-height: 100%;
+}
+
+/* ---------- Thing-inspired custom cursor ---------- */
+/* Hide the system cursor only when the .thing-cursor-scope is active on <html>. */
+@media (hover: hover) and (pointer: fine) {
+  html.thing-cursor-scope,
+  html.thing-cursor-scope * {
+    cursor: none !important;
+  }
+}
+/* The floating hand element itself. Position controlled from JS. */
+.thing-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+  width: 48px;
+  height: 48px;
+  transform: translate3d(-100px, -100px, 0);
+  transition: opacity 180ms ease;
+}
+.thing-cursor.is-hidden { opacity: 0; }
+/* Two hand poses layered — CSS opacity swaps between them for a sharp pose change. */
+.thing-cursor__pose {
+  position: absolute;
+  inset: 0;
+  transition: opacity 90ms ease, transform 90ms ease;
+  transform-origin: 50% 90%;
+}
+.thing-cursor__pose.is-off { opacity: 0; transform: scale(0.92); }
+.thing-cursor__pose.is-on  { opacity: 1; transform: scale(1); }
+
+/* Crawl wobble applied only when in crawling state */
+@keyframes thing-crawl {
+  0%   { transform: rotate(-6deg) translateY(0); }
+  25%  { transform: rotate(2deg)  translateY(-1px); }
+  50%  { transform: rotate(-4deg) translateY(0); }
+  75%  { transform: rotate(5deg)  translateY(-1px); }
+  100% { transform: rotate(-6deg) translateY(0); }
+}
+.thing-cursor__crawl.is-on { animation: thing-crawl 900ms ease-in-out infinite; }
+/* Pointing pose keeps a small idle bob so the hand still feels alive on hover */
+@keyframes thing-point-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-1px) rotate(-2deg); }
+}
+.thing-cursor__point.is-on { animation: thing-point-bob 1.6s ease-in-out infinite; }
+
+/* ---------- Paper surface ---------- */
+/* Layered ivory parchment: warm base, radial highlight, corner darkening, fine noise. */
+.paper-surface {
+  background-color: #ecdfba;
+  background-image:
+    /* central highlight — narrower and softer so the aged edges dominate */
+    radial-gradient(1000px 700px at 50% 28%, rgba(255, 247, 214, 0.55), transparent 62%),
+    /* warm mid-tone */
+    radial-gradient(1600px 1000px at 50% 60%, rgba(215, 178, 112, 0.24), transparent 70%),
+    /* uneven blotches of discoloration */
+    radial-gradient(280px 200px at 22% 18%, rgba(120, 78, 30, 0.10), transparent 70%),
+    radial-gradient(360px 260px at 78% 66%, rgba(120, 78, 30, 0.10), transparent 70%),
+    radial-gradient(220px 180px at 12% 78%, rgba(120, 78, 30, 0.09), transparent 70%),
+    /* corner darkening — pushed harder */
+    radial-gradient(140% 90% at 0% 0%,   rgba(70, 45, 15, 0.32), transparent 42%),
+    radial-gradient(140% 90% at 100% 0%, rgba(70, 45, 15, 0.32), transparent 42%),
+    radial-gradient(140% 90% at 0% 100%, rgba(70, 45, 15, 0.38), transparent 44%),
+    radial-gradient(140% 90% at 100% 100%, rgba(70, 45, 15, 0.38), transparent 44%),
+    /* paper fibre noise */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.22  0 0 0 0 0.10  0 0 0 0.12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    /* second, coarser fibre pass */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.30  0 0 0 0 0.15  0 0 0 0.10 0'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
+  background-blend-mode: normal, normal, multiply, multiply, multiply, multiply, multiply, multiply, multiply, multiply, multiply;
+}
+
+/* Discoloration overlay — very slow low-frequency variation used only inside the newspaper. */
+.paper-aging {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='1600'><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='2' seed='12'/><feColorMatrix values='0 0 0 0 0.40  0 0 0 0 0.26  0 0 0 0 0.10  0 0 0 0.35 0'/></filter><rect width='100%' height='100%' filter='url(%23b)'/></svg>");
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+  z-index: 2;
+}
+
+/* Torn/irregular edge mask — applied via CSS mask so content stays real HTML.
+   The mask is a tall vertical strip tiled along both axes to give a naturally uneven contour. */
+.paper-torn {
+  -webkit-mask-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' preserveAspectRatio='none'><defs><filter id='rough'><feTurbulence type='fractalNoise' baseFrequency='0.012 0.018' numOctaves='3' seed='6' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='14'/></filter></defs><rect x='0' y='0' width='400' height='400' fill='white' filter='url(%23rough)'/></svg>");
+          mask-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' preserveAspectRatio='none'><defs><filter id='rough'><feTurbulence type='fractalNoise' baseFrequency='0.012 0.018' numOctaves='3' seed='6' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='14'/></filter></defs><rect x='0' y='0' width='400' height='400' fill='white' filter='url(%23rough)'/></svg>");
+  -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+
+/* Stronger torn edge — used on the inside newspaper page only.
+   Tall aspect + high vertical-frequency turbulence makes the long left/right sides
+   visibly ragged rather than nearly straight. */
+.paper-torn-strong {
+  -webkit-mask-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 1200' preserveAspectRatio='none'><defs><filter id='rough' x='-4%25' y='-1%25' width='108%25' height='102%25'><feTurbulence type='fractalNoise' baseFrequency='0.045 0.006' numOctaves='4' seed='21' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='28'/></filter></defs><rect x='6' y='6' width='388' height='1188' fill='white' filter='url(%23rough)'/></svg>");
+          mask-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 1200' preserveAspectRatio='none'><defs><filter id='rough' x='-4%25' y='-1%25' width='108%25' height='102%25'><feTurbulence type='fractalNoise' baseFrequency='0.045 0.006' numOctaves='4' seed='21' result='t'/><feDisplacementMap in='SourceGraphic' in2='t' scale='28'/></filter></defs><rect x='6' y='6' width='388' height='1188' fill='white' filter='url(%23rough)'/></svg>");
+  -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+
+/* Deeper aged darkening at the perimeter — two layered vignettes so the outer
+   5–10% reads distinctly darker than the middle. */
+.paper-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* very outer ring of aging */
+    radial-gradient(130% 92% at 50% 50%, transparent 62%, rgba(60, 34, 8, 0.32) 88%, rgba(35, 18, 4, 0.58) 100%),
+    /* inner soft dip */
+    radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(70, 42, 12, 0.16) 90%);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+/* A second perimeter layer that draws a razor-thin darker edge line, sold as
+   the physical rim of the paper where it's been handled most. */
+.paper-vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(60, 34, 8, 0.25),
+    inset 0 0 24px rgba(60, 34, 8, 0.28),
+    inset 0 0 90px rgba(60, 34, 8, 0.20);
+  z-index: 1;
+}
+
+/* Real-looking drop shadow onto the dark surface below — heavier so the paper
+   clearly sits on a physical surface. */
+.paper-shadow {
+  filter:
+    drop-shadow(0 40px 60px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 12px 18px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+/* Curled-corner shadows — cast under the four corners to fake a paper lift. */
+.paper-corner {
+  position: absolute;
+  pointer-events: none;
+  width: 60px;
+  height: 60px;
+  z-index: 5;
+}
+.paper-corner--tl { top: -6px; left: -6px;  background: radial-gradient(circle at 100% 100%, rgba(0,0,0,0.35), transparent 60%); }
+.paper-corner--tr { top: -6px; right: -6px; background: radial-gradient(circle at 0% 100%,   rgba(0,0,0,0.35), transparent 60%); }
+.paper-corner--bl { bottom: -6px; left: -6px;  background: radial-gradient(circle at 100% 0%, rgba(0,0,0,0.4), transparent 62%); }
+.paper-corner--br { bottom: -6px; right: -6px; background: radial-gradient(circle at 0% 0%,   rgba(0,0,0,0.4), transparent 62%); }
+
+/* ---------- Editorial rules ---------- */
+.rule-thin   { border-top: 1px solid #1a1611; }
+.rule-double { border-top: 1px solid #1a1611; border-bottom: 1px solid #1a1611; height: 5px; }
+.rule-hair   { border-top: 1px solid rgba(26, 22, 17, 0.35); }
+
+/* Editorial ornamental divider — thin rule with a small centered diamond. */
+.divider-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #1a1611;
+}
+.divider-ornament::before,
+.divider-ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* ---------- Drop cap ---------- */
+.dropcap::first-letter {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+  float: left;
+  font-size: 4.2rem;
+  line-height: 0.88;
+  padding: 0.35rem 0.55rem 0 0;
+  color: #1a1611;
+}
+
+/* ---------- Columns ---------- */
+.editorial-columns {
+  column-gap: 1.75rem;
+  column-rule: 1px solid rgba(26, 22, 17, 0.28);
+}
+
+/* ---------- Ink imperfections ---------- */
+.ink-print {
+  text-shadow:
+    0.35px 0 0 rgba(26, 22, 17, 0.9),
+    -0.25px 0 0 rgba(26, 22, 17, 0.85),
+    0 0.25px 0 rgba(26, 22, 17, 0.7);
+}
+
+/* ---------- Photograph treatment ---------- */
+.newspaper-photo {
+  filter: grayscale(1) contrast(1.05) sepia(0.18) brightness(0.98);
+  background: #d9c9a3;
+}
+.newspaper-photo-soft {
+  filter: grayscale(0.85) contrast(1.02) sepia(0.22) brightness(0.98);
+}
+
+/* Halftone dot overlay for photographs */
+.halftone { position: relative; }
+.halftone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(26, 22, 17, 0.55) 0.6px, transparent 0.9px);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ---------- Coffee stain ---------- */
+/* Uses layered radial gradients + turbulence displacement for uneven soak-in edges. */
+.coffee-stain {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  background:
+    /* darker soaked core */
+    radial-gradient(circle at 40% 42%, rgba(45, 22, 5, 0.72) 0%, rgba(70, 34, 8, 0.55) 14%, rgba(95, 52, 16, 0.40) 28%, rgba(130, 82, 32, 0.24) 48%, rgba(150, 100, 48, 0.10) 68%, transparent 80%),
+    /* uneven second lobe */
+    radial-gradient(circle at 58% 62%, rgba(55, 28, 8, 0.50) 0%, rgba(90, 52, 20, 0.28) 30%, transparent 65%),
+    /* outer bleed */
+    radial-gradient(circle at 50% 50%, transparent 60%, rgba(90, 55, 20, 0.14) 80%, transparent 92%);
+  filter: url(#stain-rough) blur(0.5px);
+  opacity: 0.92;
+}
+.coffee-ring {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  border: 6px solid rgba(70, 38, 12, 0.35);
+  box-shadow: inset 0 0 20px rgba(70, 38, 12, 0.2);
+  filter: url(#stain-rough) blur(0.6px);
+  opacity: 0.75;
+}
+.ink-splat {
+  position: absolute;
+  pointer-events: none;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(50, 28, 8, 0.55);
+  mix-blend-mode: multiply;
+  filter: blur(0.3px);
+}
+
+/* ---------- Creases (very subtle) ---------- */
+.crease-v {
+  position: absolute;
+  pointer-events: none;
+  top: 0; bottom: 0; left: 50%;
+  width: 60px;
+  transform: translateX(-30px);
+  background: linear-gradient(90deg, transparent, rgba(60, 40, 15, 0.10) 45%, rgba(60, 40, 15, 0.14) 50%, rgba(60, 40, 15, 0.10) 55%, transparent);
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+.crease-h {
+  position: absolute;
+  pointer-events: none;
+  left: 4%; right: 4%; top: 33%;
+  height: 20px;
+  background: linear-gradient(180deg, transparent, rgba(60, 40, 15, 0.06) 45%, rgba(60, 40, 15, 0.10) 50%, rgba(60, 40, 15, 0.06) 55%, transparent);
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* ---------- Closed newspaper (folded look) ---------- */
+.folded-paper {
+  background-color: #ecdfbf;
+  background-image:
+    /* soft top-bottom shading from the fold */
+    linear-gradient(180deg, rgba(0, 0, 0, 0.10), transparent 12%, transparent 88%, rgba(0, 0, 0, 0.14)),
+    /* central crease */
+    linear-gradient(90deg, transparent 49.3%, rgba(60, 40, 15, 0.38) 49.85%, rgba(60, 40, 15, 0.42) 50.15%, transparent 50.7%),
+    /* fibre noise */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.22  0 0 0 0 0.10  0 0 0 0.12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-blend-mode: normal, normal, multiply;
+  box-shadow:
+    0 40px 60px -20px rgba(0, 0, 0, 0.7),
+    0 12px 24px -8px rgba(0, 0, 0, 0.5),
+    inset 0 0 90px rgba(120, 90, 40, 0.28);
+}
+
+/* ---------- Subtle motion ---------- */
+@keyframes hint-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%      { transform: translateY(4px); opacity: 1; }
+}
+.hint-bob { animation: hint-bob 2.4s ease-in-out infinite; }
+
+@keyframes portrait-drift {
+  0%, 100% { transform: translate(0, 0) scale(1.02); }
+  25%      { transform: translate(-2px, -1px) scale(1.025); }
+  50%      { transform: translate(1px, 1px) scale(1.02); }
+  75%      { transform: translate(2px, -1px) scale(1.03); }
+}
+.portrait-drift { animation: portrait-drift 9s ease-in-out infinite; }
+
+@keyframes portrait-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  94%, 96%      { transform: scaleY(0.05); }
+}
+.portrait-blink { animation: portrait-blink 6s ease-in-out infinite; transform-origin: center; }
+
+/* ---------- Small stamps ---------- */
+.stamp-circle {
+  position: absolute;
+  width: 82px; height: 82px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(107, 31, 20, 0.55);
+  color: rgba(107, 31, 20, 0.65);
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  transform: rotate(-8deg);
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+  padding: 8px;
+  line-height: 1.15;
+}
+.stamp-circle::before {
+  content: '';
+  position: absolute; inset: 4px; border-radius: 50%;
+  border: 1px dashed rgba(107, 31, 20, 0.4);
+}
+
+/* Section labels */
+.section-label {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #5a4f3f;
+}
+
+html { scroll-behavior: smooth; }
+
+/* On very small screens keep decoration lighter for performance/readability */
+@media (max-width: 640px) {
+  .paper-torn {
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+  .crease-v, .crease-h { display: none; }
+}
