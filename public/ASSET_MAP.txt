@@ -1,0 +1,52 @@
+THING CURSOR ASSET MAP
+
+Use these files as the initial cursor animation assets.
+
+IDLE / REST
+idle_01.png = relaxed crawling/rest pose
+idle_02.png = relaxed alternate pose
+idle_03.png = lowered/rest pose
+
+CRAWL CYCLE 1
+crawl1_01.png = step frame 1
+crawl1_02.png = step frame 2
+crawl1_03.png = step frame 3
+crawl1_04.png = step frame 4
+crawl1_05.png = step frame 5
+crawl1_06.png = step frame 6
+
+CRAWL CYCLE 2
+crawl2_01.png = alternate step frame 1
+crawl2_02.png = alternate step frame 2
+crawl2_03.png = alternate step frame 3
+crawl2_04.png = alternate step frame 4
+crawl2_05.png = alternate step frame 5
+crawl2_06.png = alternate step frame 6
+
+TURN / DIRECTION CHANGE
+turn_01.png = turn frame 1
+turn_02.png = turn frame 2
+turn_03.png = turn frame 3
+turn_04.png = turn frame 4
+turn_05.png = turn frame 5
+turn_06.png = turn frame 6
+turn_07.png = turn frame 7
+
+STOP / SETTLE
+settle_01.png = settle frame 1
+settle_02.png = settle frame 2
+settle_03.png = settle frame 3
+settle_04.png = final resting frame
+
+LINK HOVER
+pointing_01.png = pointing hand for links/buttons
+
+IMPLEMENTATION
+- Do not regenerate or replace these images.
+- Use the crawl frames as an animation sequence rather than a CSS cursor image.
+- Use pointing_01.png when hovering links/buttons.
+- Keep the cursor hotspot at the pointing fingertip.
+- The crawling hand should follow the mouse with a slight delay.
+- Reverse/rotate the visual toward the direction of mouse movement.
+- Speed up the crawl animation when mouse velocity increases.
+- Stop on settle/idle when the mouse stops.

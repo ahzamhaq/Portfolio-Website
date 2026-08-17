@@ -5,10 +5,10 @@ export default {
     extend: {
       colors: {
         paper: {
-          DEFAULT: '#f4ecd8',
-          light: '#f8f1de',
-          dark: '#e8dcc0',
-          edge: '#d9c9a3',
+          DEFAULT: '#E3C87A',
+          light: '#EDD89A',
+          dark: '#C8A852',
+          edge: '#B89040',
         },
         ink: {
           DEFAULT: '#1a1611',

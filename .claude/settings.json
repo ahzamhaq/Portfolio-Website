@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from PIL import Image; a=Image.open\\(r'c:/Users/HP/Desktop/PROJECTS/Portfolio Website/public/crawl.png'\\); b=Image.open\\(r'c:/Users/HP/Desktop/PROJECTS/Portfolio Website/public/point.png'\\); print\\('crawl', a.size\\); print\\('point', b.size\\)\")",
+      "Bash(python -c 'import struct; *)",
+      "Bash(npx vite *)"
+    ]
+  }
+}
