@@ -43,8 +43,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   pointer-events: none;
   z-index: 99999;
   will-change: transform;
@@ -64,17 +64,17 @@ body {
 }
 
 /* Precise target indicator — sits exactly on the real mouse position, no lag. */
-/* top/left offset centres the 10px circle: element top-left at (-5,-5), */
+/* top/left offset centres the 12px circle: element top-left at (-6,-6), */
 /* then translate3d(mouseX, mouseY) moves it so the centre lands on the cursor. */
 .thing-cursor-dot {
   position: fixed;
-  top: -5px;
-  left: -5px;
-  width: 10px;
-  height: 10px;
+  top: -6px;
+  left: -6px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 1.5px solid rgba(10, 6, 3, 0.65);
-  background: rgba(10, 6, 3, 0.18);
+  border: 2px solid rgba(10, 6, 3, 0.72);
+  background: rgba(10, 6, 3, 0.22);
   pointer-events: none;
   z-index: 100000;
   transform: translate3d(-200px, -200px, 0);

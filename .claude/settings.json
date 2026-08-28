@@ -3,7 +3,11 @@
     "allow": [
       "Bash(python -c \"from PIL import Image; a=Image.open\\(r'c:/Users/HP/Desktop/PROJECTS/Portfolio Website/public/crawl.png'\\); b=Image.open\\(r'c:/Users/HP/Desktop/PROJECTS/Portfolio Website/public/point.png'\\); print\\('crawl', a.size\\); print\\('point', b.size\\)\")",
       "Bash(python -c 'import struct; *)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(python3 -c \"from PIL import Image; print\\('Pillow available'\\)\")",
+      "Bash(python -c \"from PIL import Image; print\\('Pillow available'\\)\")",
+      "Bash(pip install *)",
+      "Bash(sort -k5 -rn)"
     ]
   }
 }

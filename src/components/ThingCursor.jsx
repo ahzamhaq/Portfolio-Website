@@ -27,33 +27,40 @@ const ALL_ASSETS = [
 
 // ── Layout ───────────────────────────────────────────────────────────────────
 
-const SIZE = 40;
+const SIZE = 48;
 const CRAWL_HOTSPOT = { x: 0.5, y: 0.15 };
 const POINT_HOTSPOT = { x: 0.5, y: 0.05 };
 
 // ── Physics ──────────────────────────────────────────────────────────────────
 
-const MAX_SPEED = 700;          // px/s
-const STEER_RATE = 6;           // velocity lerp rate — lower = more crawl lag
-const ARRIVE_RADIUS = 90;       // px: start decelerating inside this radius
-const ARRIVE_THRESHOLD = 4;     // px: hard-snap Thing to target when this close
+const MAX_SPEED = 680;          // px/s — keep responsive
+const STEER_RATE = 8;           // velocity steering rate
+const ARRIVE_RADIUS = 80;       // px: start decelerating inside this radius
+const ARRIVE_THRESHOLD = 6;     // px: hard-snap when this close; prevents micro-jitter
 const MOUSE_THRESHOLD = 1.5;    // px: ignore mouse movements smaller than this
+// Per-frame displacement cap. At 60 fps, MAX_SPEED 680 → 680/60 ≈ 11 px/frame.
+// At 30 fps (dt=0.033), 680×0.033 ≈ 22 px. Setting 22 px lets normal motion
+// through at any refresh rate while capping actual spikes from GC pauses or
+// compositor stalls. Previous value of 40 was above the normal maximum and
+// therefore never fired — this value is intentionally just above normal max.
+const MAX_FRAME_DIST = 22;      // px/frame hard cap
 
 // ── Rotation ─────────────────────────────────────────────────────────────────
 //
-// The crawl images (e.g. crawl1_03) have fingers pointing roughly straight
-// downward at natural (0 °) orientation. Standard Math.atan2(vy, vx) gives 0
-// for rightward motion, so we need −π/2 to make "right motion → fingers right".
-//
-// Verify:
-//   moving RIGHT  (vy=0, vx=1): atan2(0,1) − π/2 = −π/2 → 90° CCW from natural ✓
-//   moving DOWN   (vy=1, vx=0): atan2(1,0) − π/2 =  0   → natural pose       ✓
-//   moving LEFT   (vy=0, vx=−1): atan2(0,−1) − π/2 = π/2 → 90° CW           ✓
-//   moving UP     (vy=−1, vx=0): atan2(−1,0) − π/2 = −π  → flipped up        ✓
+// The crawl images have fingers pointing roughly straight downward at 0°.
+// Standard Math.atan2(vy, vx) gives 0 for rightward motion, so −π/2 aligns:
+//   moving RIGHT  → atan2(0,1)  − π/2 = −π/2 → 90° CCW (fingers right)  ✓
+//   moving DOWN   → atan2(1,0)  − π/2 =  0   → natural downward pose     ✓
+//   moving LEFT   → atan2(0,−1) − π/2 =  π/2 → 90° CW                   ✓
+//   moving UP     → atan2(−1,0) − π/2 = −π   → flipped up               ✓
 //
 const BASE_ROT_OFFSET = -Math.PI / 2;
-const ROT_SMOOTH = 10;      // rad/s convergence rate
-const ROT_MIN_SPEED = 30;   // px/s: freeze rotation below this speed
+const ROT_SMOOTH = 12;      // rad/s convergence rate (slightly snappier)
+const ROT_MIN_SPEED = 25;   // px/s: freeze rotation below this speed
+
+// Resting angle: fingers point downward (natural) = 0 rad.
+// We snap to this on SETTLING so the final pose is always consistent.
+const ROT_REST = 0;
 
 // ── State machine ────────────────────────────────────────────────────────────
 
@@ -67,14 +74,17 @@ const S = {
 
 const IDLE_FRAME_MS = 520;
 const SETTLE_FRAME_MS = 70;
-const TURN_FRAME_MS = 40;
-const CRAWL_MS_SLOW = 140;
-const CRAWL_MS_FAST = 40;
-const CRAWL_SPEED_MAX = 500;     // px/s: speed at which crawl hits max FPS
+const TURN_FRAME_MS = 45;
+const CRAWL_MS_SLOW = 130;
+const CRAWL_MS_FAST = 38;
+const CRAWL_SPEED_MAX = 480;     // px/s: speed at which crawl hits max FPS
 
-const MOUSE_STOP_MS = 100;       // ms idle before mouse is "stopped"
-const TURN_ANGLE_RAD = 1.2;      // ~70° sudden direction change triggers turn
-const TURN_MIN_SPEED = 200;      // px/s: don't trigger turn at low speed
+const MOUSE_STOP_MS = 120;       // ms idle before mouse is "stopped"
+const TURN_ANGLE_RAD = 1.3;      // ~75° sudden direction change triggers turn
+const TURN_MIN_SPEED = 220;      // px/s: don't trigger turn at low speed
+// Minimum ms between successive TURNING entries — prevents rapid re-triggering
+// during jitter or very fast back-and-forth mouse movement.
+const TURN_COOLDOWN_MS = 220;
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -87,7 +97,7 @@ export default function ThingCursor() {
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (!canHover) return;
 
-    // Preload every asset once; hold references so the browser cache keeps them.
+    // Preload every asset; holding references keeps the browser cache warm.
     const preloaded = ALL_ASSETS.map((src) => {
       const img = new Image();
       img.src = src;
@@ -98,36 +108,35 @@ export default function ThingCursor() {
 
     // ── Mutable animation state — NO React setState, zero re-renders ─────────
 
-    // Real mouse position — updated immediately on every mousemove
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
     let prevMouseX = mouseX;
     let prevMouseY = mouseY;
-    let lastMoveAt = 0;   // 0 = mouse hasn't moved yet this session
+    let lastMoveAt = 0;
 
-    // Thing's animated position + velocity
     let thingX = mouseX;
     let thingY = mouseY;
     let velX = 0;
     let velY = 0;
 
-    // Rotation
     let rot = 0;
-    let rotTarget = 0;
+    let rotTarget = ROT_REST;
 
-    // State machine
     let state = S.IDLE;
     let pointing = false;
 
-    // Per-state animation accumulators
     let stateFrameIdx = 0;
     let stateFrameAccum = 0;
     let crawlCycle = 0;
     let crawlIdx = 0;
     let crawlAccum = 0;
 
-    // Direction memory for turn detection
-    let lastDir = null;
+    // Direction memory for turn detection — reused to avoid per-frame allocation
+    const lastDir = { x: 0, y: 0, set: false };
+    // Timestamp of last TURNING entry — for cooldown
+    let lastTurnAt = -Infinity;
+    // When settling starts, we lock the rotTarget to ROT_REST so it's consistent.
+    let settleStarted = false;
 
     let currentSrc = '';
     let lastT = 0;
@@ -144,8 +153,19 @@ export default function ThingCursor() {
       }
     };
 
-    const enterState = (next) => {
+    const enterState = (next, now) => {
       if (state === next) return;
+
+      // On SETTLING entry: lock rotTarget to natural resting angle so the
+      // final idle pose is always consistent, never random/upside-down.
+      if (next === S.SETTLING) {
+        rotTarget = ROT_REST;
+        settleStarted = true;
+      }
+      if (next === S.TURNING) {
+        lastTurnAt = now ?? performance.now();
+      }
+
       state = next;
       stateFrameIdx = 0;
       stateFrameAccum = 0;
@@ -168,14 +188,14 @@ export default function ThingCursor() {
       const nx = e.clientX;
       const ny = e.clientY;
 
-      // ── Target indicator: REAL-TIME, no RAF, no smoothing ────────────────
+      // Target indicator: REAL-TIME, no RAF, no smoothing
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${nx}px,${ny}px,0)`;
         dotRef.current.classList.remove('is-hidden');
       }
       if (rootRef.current) rootRef.current.classList.remove('is-hidden');
 
-      // ── Physics target: only update when mouse actually moved ────────────
+      // Physics target: only update when mouse actually moved
       const moved = Math.hypot(nx - prevMouseX, ny - prevMouseY);
       if (moved >= MOUSE_THRESHOLD) {
         mouseX = nx;
@@ -186,7 +206,7 @@ export default function ThingCursor() {
         startLoop();
       }
 
-      // ── Pointing detection ───────────────────────────────────────────────
+      // Pointing detection
       const hit = e.target?.closest?.(
         'a,button,[role="button"],input[type="submit"],input[type="button"],[data-cursor="pointer"]'
       );
@@ -215,7 +235,10 @@ export default function ThingCursor() {
     // ── Main animation loop ───────────────────────────────────────────────────
 
     const tick = (now) => {
-      const dt = Math.min((now - lastT) / 1000, 0.05);
+      // Clamp dt tightly — a single large spike (e.g. tab-switch, GC pause)
+      // would otherwise let Thing jump a huge distance in one frame.
+      const rawDt = (now - lastT) / 1000;
+      const dt = Math.min(rawDt, 0.033);   // cap at ~30fps equivalent (~33ms)
       lastT = now;
 
       const mouseStopped = (now - lastMoveAt) > MOUSE_STOP_MS;
@@ -226,21 +249,22 @@ export default function ThingCursor() {
       // ── Physics ──────────────────────────────────────────────────────────
 
       if (pointing) {
-        // Pointing: snap directly to real mouse position — no lag
+        // POINTING: snap directly to real mouse — no lag
         thingX = mouseX;
         thingY = mouseY;
         velX = 0;
         velY = 0;
       } else if (dist <= ARRIVE_THRESHOLD) {
-        // Arrived: hard snap, stop all movement — prevents oscillation
+        // Arrived: hard-snap, kill velocity — prevents any oscillation
         thingX = mouseX;
         thingY = mouseY;
         velX = 0;
         velY = 0;
       } else {
-        // Chase: accelerate toward target, decelerate in ARRIVE_RADIUS
-        const nx = dx / dist;
-        const ny = dy / dist;
+        // Chase: steer velocity toward target, decelerate in ARRIVE_RADIUS
+        const invDist = 1 / dist;
+        const nx = dx * invDist;
+        const ny = dy * invDist;
         const arriveFactor = Math.min(1, dist / ARRIVE_RADIUS);
         const desiredVx = nx * MAX_SPEED * arriveFactor;
         const desiredVy = ny * MAX_SPEED * arriveFactor;
@@ -251,12 +275,27 @@ export default function ThingCursor() {
 
         const sp = Math.hypot(velX, velY);
         if (sp > MAX_SPEED) {
-          velX = (velX / sp) * MAX_SPEED;
-          velY = (velY / sp) * MAX_SPEED;
+          const inv = MAX_SPEED / sp;
+          velX *= inv;
+          velY *= inv;
         }
 
-        thingX += velX * dt;
-        thingY += velY * dt;
+        // Compute raw displacement for this frame
+        let moveX = velX * dt;
+        let moveY = velY * dt;
+
+        // Per-frame distance cap: Thing cannot move more than MAX_FRAME_DIST px
+        // in a single tick. This prevents visible teleporting when dt spikes
+        // (e.g. after a tab switch or GC pause) even though dt is already clamped.
+        const moveDist = Math.hypot(moveX, moveY);
+        if (moveDist > MAX_FRAME_DIST) {
+          const scale = MAX_FRAME_DIST / moveDist;
+          moveX *= scale;
+          moveY *= scale;
+        }
+
+        thingX += moveX;
+        thingY += moveY;
       }
 
       const speed = Math.hypot(velX, velY);
@@ -265,24 +304,32 @@ export default function ThingCursor() {
       // ── State machine ─────────────────────────────────────────────────────
 
       if (!pointing) {
-        if (speed > TURN_MIN_SPEED) {
-          const nx = velX / speed;
-          const ny = velY / speed;
-          if (lastDir) {
+        // Turn detection: only when moving fast enough and enough time has
+        // passed since the last turn (cooldown prevents rapid re-triggering).
+        if (speed > TURN_MIN_SPEED && (now - lastTurnAt) > TURN_COOLDOWN_MS) {
+          const invSp = 1 / speed;
+          const nx = velX * invSp;
+          const ny = velY * invSp;
+          if (lastDir.set) {
             const dot = Math.max(-1, Math.min(1, lastDir.x * nx + lastDir.y * ny));
             if (Math.acos(dot) > TURN_ANGLE_RAD && (state === S.CRAWLING || state === S.IDLE)) {
-              enterState(S.TURNING);
+              enterState(S.TURNING, now);
             }
           }
-          lastDir = { x: nx, y: ny };
+          lastDir.x = nx;
+          lastDir.y = ny;
+          lastDir.set = true;
         }
 
         switch (state) {
           case S.IDLE:
-            if (!mouseStopped || !arrived) enterState(S.CRAWLING);
+            if (!mouseStopped || !arrived) {
+              settleStarted = false;
+              enterState(S.CRAWLING, now);
+            }
             break;
           case S.CRAWLING:
-            if (mouseStopped && arrived) enterState(S.SETTLING);
+            if (mouseStopped && arrived) enterState(S.SETTLING, now);
             break;
           default:
             break;
@@ -311,7 +358,7 @@ export default function ThingCursor() {
           if (stateFrameIdx < SETTLE_FRAMES.length - 1) {
             stateFrameIdx++;
           } else {
-            enterState(S.IDLE);
+            enterState(S.IDLE, now);
           }
         }
         src = SETTLE_FRAMES[Math.min(stateFrameIdx, SETTLE_FRAMES.length - 1)];
@@ -326,7 +373,7 @@ export default function ThingCursor() {
             crawlCycle = 1 - crawlCycle;
             crawlIdx = 0;
             crawlAccum = 0;
-            enterState(S.CRAWLING);
+            enterState(S.CRAWLING, now);
           }
         }
         src = TURN_FRAMES[Math.min(stateFrameIdx, TURN_FRAMES.length - 1)];
@@ -351,9 +398,13 @@ export default function ThingCursor() {
 
       // ── Rotation ──────────────────────────────────────────────────────────
 
-      // Only recalculate when Thing is actually moving (prevents jitter while stationary)
-      if (!pointing && !arrived && speed > ROT_MIN_SPEED) {
-        rotTarget = Math.atan2(velY, velX) + BASE_ROT_OFFSET;
+      if (!pointing) {
+        if (!arrived && speed > ROT_MIN_SPEED && !settleStarted) {
+          // During active movement: track movement direction
+          rotTarget = Math.atan2(velY, velX) + BASE_ROT_OFFSET;
+        }
+        // When settleStarted is true, rotTarget was already locked to ROT_REST
+        // in enterState(SETTLING) — do not override it here.
       }
 
       let rotDelta = rotTarget - rot;
@@ -374,14 +425,10 @@ export default function ThingCursor() {
 
       // ── Loop continuation ─────────────────────────────────────────────────
       //
-      // Stop the RAF when nothing is animating:
-      //   • mouse hasn't moved
-      //   • Thing has arrived at target
-      //   • state is stable (IDLE or POINTING)
-      //   • rotation has converged
-      //
-      // The loop restarts automatically on the next mousemove. For IDLE state
-      // the next idle frame is scheduled via setTimeout so breathing continues.
+      // Stop the RAF when nothing needs animating:
+      //   mouse stopped + Thing arrived + stable state + rotation converged.
+      // Loop restarts automatically on the next mousemove.
+      // For IDLE, schedule the next frame-tick via setTimeout.
 
       const rotSettled = Math.abs(rotDelta) < 0.002;
       const canRest =
@@ -398,7 +445,7 @@ export default function ThingCursor() {
             if (!loopRunning) startLoop();
           }, msUntilNext);
         }
-        // POINTING: no timer needed — loop restarts on next mousemove
+        // POINTING: loop restarts on next mousemove
       } else {
         raf = requestAnimationFrame(tick);
       }
