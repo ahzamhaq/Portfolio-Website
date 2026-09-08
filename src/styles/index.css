@@ -409,10 +409,25 @@ body {
   background-color: #1b120a !important;
 }
 
-/* 2. Paper surface: flat amber colour only — no SVG textures, no radial gradients */
+/* 2. Paper surface: parchment base colour */
 .paper-surface {
-  background-color: #E3C87A !important;
+  background-color: #E8D5B0 !important;
   background-image: none !important;
+}
+/* Static grain tile — uses ::after because ::before is claimed by .paper-vignette
+   (same element carries both classes) and .paper-vignette::before { display:none }
+   would kill the grain if we used ::before. ::after has no competing rule. */
+.paper-surface::after {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background-image: url("/textures/paper-grain.webp") !important;
+  background-repeat: repeat !important;
+  background-size: 256px 256px !important;
+  opacity: 0.09 !important;
+  z-index: 0 !important;
 }
 
 /* 3. Paper aging: hidden — was a 1200×1600 SVG turbulence + mix-blend-mode */
@@ -428,20 +443,101 @@ body {
   box-shadow: none !important;
 }
 
-/* 5. Drop-shadow filter: removed — was 3× drop-shadow forcing compositor stacking */
-.paper-shadow {
-  filter: none !important;
+/* 5. Layered newspaper sheets ─────────────────────────────────────────────── */
+
+/* newspaper-stack: the positioning container for all three sheets.
+   No padding — sheet-a sits flush inside. Backing sheets use absolute
+   positioning with values that place them relative to sheet-a's bounds.
+   The outer max-w-6xl container has px-3/8/14 padding which already gives
+   some room; overflow:visible (default on block) lets sheets protrude. */
+.newspaper-stack {
+  position: relative;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 640px) {
+  .newspaper-stack {
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
 }
 
-/* 6. Torn edge CSS masks: removed — was SVG feDisplacementMap on full-page element */
+/* ── Sheet C — farthest back ─────────────────────────────────────────────────
+   Darkest aged amber. Same width/height as the stack (= sheet-a's size),
+   then extended with negative top/right/bottom/left so it is 16px wider on
+   the right and 30px taller at the bottom before rotation.
+   rotate(1.4deg) around the top-centre swings the right+bottom edges out
+   further, making them clearly visible from behind sheet-a. */
+.sheet-c {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: -16px;
+  bottom: -30px;
+  background-color: #B8966A;
+  transform: rotate(1.4deg);
+  transform-origin: 50% 0%;
+  z-index: 1;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.50),
+    0 2px  6px rgba(0,0,0,0.30);
+}
+
+/* ── Sheet B — middle sheet ──────────────────────────────────────────────────
+   Warmer/lighter than C. Extended 18px on the left and 24px at the bottom.
+   rotate(-1deg) around top-centre swings the left+bottom edges outward,
+   making the left edge clearly visible beneath sheet-a. */
+.sheet-b {
+  position: absolute;
+  top: 2px;
+  left: -18px;
+  right: 0;
+  bottom: -22px;
+  background-color: #CCB07C;
+  transform: rotate(-1.0deg);
+  transform-origin: 50% 0%;
+  z-index: 2;
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.40),
+    0 1px  4px rgba(0,0,0,0.22);
+}
+
+/* ── Sheet A — front sheet (the actual newspaper) ────────────────────────────
+   Perfectly rectangular, sits flat on top. All content lives here.
+   Drop shadow creates clear separation from backing sheets. */
+.sheet-a {
+  position: relative;
+  z-index: 3;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.55),
+    0 3px  8px rgba(0,0,0,0.38),
+    0 1px  2px rgba(0,0,0,0.28);
+}
+
+/* Subtle perimeter darkening on the front sheet. */
+.sheet-edge-aging {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  box-shadow:
+    inset 0 0 0 1px  rgba(54, 28, 4, 0.20),
+    inset 0 0 0 8px  rgba(58, 30, 5, 0.09),
+    inset 0 0 32px   rgba(62, 34, 6, 0.13);
+}
+
+/* 6. Torn edge masks: both off (no clip-path anywhere on front sheet) */
 .paper-torn,
 .paper-torn-strong {
   -webkit-mask-image: none !important;
           mask-image: none !important;
+  clip-path: none !important;
 }
 
-/* 7. Corner lift blurs: removed */
-.paper-corner {
+/* 7. Old helpers no longer in the DOM — kept as safety no-ops */
+.paper-corner,
+.paper-shadow,
+.paper-edge-aging {
   display: none !important;
 }
 

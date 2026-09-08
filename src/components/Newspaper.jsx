@@ -22,25 +22,28 @@ export default function Newspaper({ visible }) {
       <PaperFilterDefs />
 
       <div className="mx-auto max-w-6xl px-3 sm:px-8 lg:px-14">
-        {/* Relative positioning ring — carries corner-lift shadows outside the torn mask */}
-        <div className="relative my-4 sm:my-10">
-          {/* Corner-lift shadows sit under the paper, outside the mask so they aren't clipped */}
-          <div className="paper-corner paper-corner--tl" />
-          <div className="paper-corner paper-corner--tr" />
-          <div className="paper-corner paper-corner--bl" />
-          <div className="paper-corner paper-corner--br" />
+        <div className="newspaper-stack" style={{ position: 'relative', isolation: 'isolate' }}>
 
-          {/* Drop shadow wrapper — so the torn silhouette casts a real shadow */}
-          <div className="paper-shadow relative">
-          <div className="paper-torn-strong">
+          {/* SHEET C — farthest back. Offset right+down, rotated slightly clockwise.
+              Colour slightly darker/more aged than front sheet.
+              Peeking out from right edge and bottom edge of main sheet.
+              Has its own subtle clip-path for a mildly irregular (not dramatically torn) perimeter. */}
+          <div className="sheet sheet-c" aria-hidden />
+
+          {/* SHEET B — middle sheet. Offset left+down, rotated slightly counter-clockwise.
+              Colour slightly lighter/warmer than Sheet C.
+              Peeks out from left edge and bottom.
+              Has its own subtle clip-path. */}
+          <div className="sheet sheet-b" aria-hidden />
+
+          {/* SHEET A — front sheet. The main newspaper. NO clip-path, NO torn edges.
+              Sits flat on top. All content lives here. */}
+          <div className="sheet sheet-a">
+            {/* subtle edge darkening overlay — stays inside, rendered as box-shadow */}
+            <div className="sheet-edge-aging" aria-hidden />
             <div className="paper-surface paper-vignette relative overflow-hidden px-5 py-8 sm:px-10 sm:py-12 lg:px-16 lg:py-16">
-              {/* Broad discoloration layer */}
               <div className="paper-aging" />
-
-              {/* Decorative overlays (stains, creases, stamps) */}
               <PaperOverlays />
-
-              {/* Actual content — sits above overlays via z-20 */}
               <div className="relative z-20">
                 <Masthead />
                 <MainStory />
@@ -52,14 +55,13 @@ export default function Newspaper({ visible }) {
                 <TechnologyDesk />
                 <Achievements />
                 <Contact />
-
                 <footer className="mt-10 border-t border-ink pt-3 text-center font-sans text-[10px] tracking-editorial text-ink-muted">
                   PRINTED ON THE WEB · SET IN PLAYFAIR, LORA & INTER · © {new Date().getFullYear()} AHZAM HAQUE
                 </footer>
               </div>
             </div>
           </div>
-          </div>
+
         </div>
       </div>
     </motion.main>

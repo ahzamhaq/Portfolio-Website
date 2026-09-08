@@ -7,7 +7,7 @@ export default function App() {
   const [opened, setOpened] = useState(false);
 
   return (
-    <div className="min-h-screen w-full bg-[#ece2c8]">
+    <div className="min-h-screen w-full">
       {!opened && <NewspaperIntro onOpened={() => setOpened(true)} />}
       <Newspaper visible={opened} />
       {opened && <ThingCursor />}

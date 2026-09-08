@@ -7,7 +7,17 @@
       "Bash(python3 -c \"from PIL import Image; print\\('Pillow available'\\)\")",
       "Bash(python -c \"from PIL import Image; print\\('Pillow available'\\)\")",
       "Bash(pip install *)",
-      "Bash(sort -k5 -rn)"
+      "Bash(sort -k5 -rn)",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL ok'\\)\")",
+      "Bash(python -c \"from PIL import Image; print\\('PIL ok'\\)\")",
+      "Bash(node -e \"console.log\\('node ok'\\)\")",
+      "Bash(python -)",
+      "Bash(cat vite.config.js)",
+      "Bash(cat vite.config.ts)",
+      "Bash(npm run *)",
+      "Bash(pip show *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5177/)",
+      "Bash(start http://localhost:5177/)"
     ]
   }
 }

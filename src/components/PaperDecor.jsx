@@ -187,72 +187,77 @@ function StainTiny() {
   );
 }
 
-// Decorative paper overlays: creases, tea/coffee ring stains, ink splatter, stamps.
-// Positioned absolutely inside the paper container. Non-interactive (pointer-events: none).
+// Decorative paper overlays — Phase 2.3: static pre-rendered stain images only.
+// No SVG filters, no blend modes, no animation. Pointer-events: none throughout.
+// PERF_TEST_NO_EFFECTS gates the old procedural stains only; static images are always on.
+const stain = (src, style) => (
+  <img
+    aria-hidden
+    src={src}
+    draggable={false}
+    style={{
+      position: 'absolute',
+      pointerEvents: 'none',
+      userSelect: 'none',
+      display: 'block',
+      ...style,
+    }}
+  />
+);
+
 export function PaperOverlays() {
-  if (PERF_TEST_NO_EFFECTS) return null;
   return (
-    <div className="pointer-events-none absolute inset-0 z-10">
-      {/* Creases — central fold + secondary horizontal + diagonal */}
-      <div className="crease-v" />
-      <div className="crease-h" />
-      <div className="crease-h" style={{ top: '66%' }} />
-      <div className="crease-diag" />
+    // overflow:visible so stains near edges aren't clipped by paper-surface's overflow:hidden
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, overflow: 'visible' }}>
 
-      {/* SVG tea/coffee ring stains — absorbed into paper via multiply blend */}
-      <StainLarge />
-      <StainSmall />
-      <StainTiny />
+      {/* ── Large coffee ring — right-centre, spanning featured-project area ── */}
+      {stain('/textures/stain-ring-lg.webp', {
+        width: 340, height: 340,
+        top: '41%', right: '2%',
+        opacity: 0.38,
+        transform: 'rotate(14deg)',
+      })}
 
-      {/* Ink splatters */}
-      <div className="ink-splat" style={{ top: '20%', right: '18%', width: 5, height: 5 }} />
-      <div className="ink-splat" style={{ top: '55%', left: '10%', width: 4, height: 4, opacity: 0.7 }} />
-      <div className="ink-splat" style={{ top: '75%', right: '22%', width: 7, height: 7, opacity: 0.8 }} />
-      <div className="ink-splat" style={{ top: '78%', right: '20%', width: 3, height: 3 }} />
-      <div className="ink-splat" style={{ top: '52%', right: '30%', width: 3, height: 3, opacity: 0.6 }} />
-      <div className="ink-splat" style={{ top: '60%', right: '8%',  width: 5, height: 5, opacity: 0.65 }} />
-      <div className="ink-splat" style={{ top: '64%', right: '35%', width: 2, height: 2 }} />
+      {/* ── Large spill — lower-left, irregular absorbed patch ── */}
+      {stain('/textures/stain-spill-lg.webp', {
+        width: 380, height: 356,
+        bottom: '8%', left: '1%',
+        opacity: 0.32,
+        transform: 'rotate(-8deg)',
+      })}
 
-      {/* PRINTED ON THE WEB stamp (top-left) */}
-      <div className="stamp-circle" style={{ top: '18px', left: '18px' }}>
-        Printed<br />on the<br />Web
-      </div>
+      {/* ── Small ring — upper-left, subtle accent ── */}
+      {stain('/textures/stain-ring-sm.webp', {
+        width: 160, height: 160,
+        top: '14%', left: '3%',
+        opacity: 0.30,
+        transform: 'rotate(5deg)',
+      })}
 
-      {/* Monogram crest (bottom-right) */}
-      <div className="stamp-circle" style={{ bottom: '22px', right: '22px', width: 70, height: 70, transform: 'rotate(6deg)' }}>
-        A · H<br />MMXXVI
-      </div>
+      {/* ── Small splash cluster — mid-right, quiet accent ── */}
+      {stain('/textures/stain-splash-sm.webp', {
+        width: 130, height: 130,
+        top: '62%', right: '6%',
+        opacity: 0.32,
+        transform: 'rotate(-22deg)',
+      })}
 
-      {/* Folded corner cue — top-right */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: 0, right: 0, width: 46, height: 46,
-          background: 'linear-gradient(225deg, rgba(180, 148, 80, 0.92) 0%, rgba(180, 148, 80, 0.92) 48%, transparent 50%)',
-          boxShadow: '-2px 2px 5px rgba(0,0,0,0.18)',
-          mixBlendMode: 'multiply',
-          opacity: 0.80,
-        }}
-      />
+      {/* ── Faint partial ring — lower-right, very subtle background variation ── */}
+      {stain('/textures/stain-ring-faint.webp', {
+        width: 260, height: 174,
+        bottom: '22%', right: '4%',
+        opacity: 0.28,
+        transform: 'rotate(6deg)',
+      })}
 
-      {/* Handwritten annotation */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          top: '9%', right: '4%',
-          transform: 'rotate(-6deg)',
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
-          fontStyle: 'italic',
-          fontSize: '13px',
-          color: 'rgba(90, 40, 20, 0.55)',
-          mixBlendMode: 'multiply',
-          letterSpacing: '0.02em',
-        }}
-      >
-        vol. i — keep.
-      </div>
+      {/* ── Second small ring — upper-right, very faint ── */}
+      {stain('/textures/stain-ring-sm.webp', {
+        width: 110, height: 110,
+        top: '7%', right: '8%',
+        opacity: 0.22,
+        transform: 'rotate(-11deg)',
+      })}
+
     </div>
   );
 }
