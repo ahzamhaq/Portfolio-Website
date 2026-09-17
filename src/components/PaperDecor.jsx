@@ -1,6 +1,4 @@
-// PERF TEST B: set to false to restore stains + filters.
-// Matches the CSS override block at the bottom of index.css.
-const PERF_TEST_NO_EFFECTS = true;
+const PERF_TEST_NO_EFFECTS = false;
 
 // Shared SVG filter defs — stain-warp and stain-warp-sm distort the ring
 // stains to look irregular/organic. Referenced by inline SVG stains below.

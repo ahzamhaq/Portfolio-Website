@@ -395,61 +395,8 @@ html { scroll-behavior: smooth; }
   .crease-v, .crease-h { display: none; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PERF TEST B — all newspaper visual effects disabled for A/B comparison.
-   The cursor was Test A (no improvement). This isolates paper effects.
+/* ── Layered newspaper sheets ─────────────────────────────────────────────── */
 
-   To RESTORE: delete from this comment to END PERF TEST B below.
-   Nothing above this block has been changed.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* 1. Body: flat dark — remove full-viewport SVG turbulence + blend mode */
-body {
-  background-image: none !important;
-  background-color: #1b120a !important;
-}
-
-/* 2. Paper surface: parchment base colour */
-.paper-surface {
-  background-color: #E8D5B0 !important;
-  background-image: none !important;
-}
-/* Static grain tile — uses ::after because ::before is claimed by .paper-vignette
-   (same element carries both classes) and .paper-vignette::before { display:none }
-   would kill the grain if we used ::before. ::after has no competing rule. */
-.paper-surface::after {
-  content: '' !important;
-  display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-  pointer-events: none !important;
-  background-image: url("/textures/paper-grain.webp") !important;
-  background-repeat: repeat !important;
-  background-size: 256px 256px !important;
-  opacity: 0.09 !important;
-  z-index: 0 !important;
-}
-
-/* 3. Paper aging: hidden — was a 1200×1600 SVG turbulence + mix-blend-mode */
-.paper-aging {
-  display: none !important;
-}
-
-/* 4. Paper vignette: removed — was 6 radial gradients + mix-blend-mode multiply */
-.paper-vignette::before {
-  display: none !important;
-}
-.paper-vignette::after {
-  box-shadow: none !important;
-}
-
-/* 5. Layered newspaper sheets ─────────────────────────────────────────────── */
-
-/* newspaper-stack: the positioning container for all three sheets.
-   No padding — sheet-a sits flush inside. Backing sheets use absolute
-   positioning with values that place them relative to sheet-a's bounds.
-   The outer max-w-6xl container has px-3/8/14 padding which already gives
-   some room; overflow:visible (default on block) lets sheets protrude. */
 .newspaper-stack {
   position: relative;
   margin-top: 1rem;
@@ -462,12 +409,6 @@ body {
   }
 }
 
-/* ── Sheet C — farthest back ─────────────────────────────────────────────────
-   Darkest aged amber. Same width/height as the stack (= sheet-a's size),
-   then extended with negative top/right/bottom/left so it is 16px wider on
-   the right and 30px taller at the bottom before rotation.
-   rotate(1.4deg) around the top-centre swings the right+bottom edges out
-   further, making them clearly visible from behind sheet-a. */
 .sheet-c {
   position: absolute;
   top: 2px;
@@ -483,10 +424,6 @@ body {
     0 2px  6px rgba(0,0,0,0.30);
 }
 
-/* ── Sheet B — middle sheet ──────────────────────────────────────────────────
-   Warmer/lighter than C. Extended 18px on the left and 24px at the bottom.
-   rotate(-1deg) around top-centre swings the left+bottom edges outward,
-   making the left edge clearly visible beneath sheet-a. */
 .sheet-b {
   position: absolute;
   top: 2px;
@@ -502,9 +439,6 @@ body {
     0 1px  4px rgba(0,0,0,0.22);
 }
 
-/* ── Sheet A — front sheet (the actual newspaper) ────────────────────────────
-   Perfectly rectangular, sits flat on top. All content lives here.
-   Drop shadow creates clear separation from backing sheets. */
 .sheet-a {
   position: relative;
   z-index: 3;
@@ -514,7 +448,6 @@ body {
     0 1px  2px rgba(0,0,0,0.28);
 }
 
-/* Subtle perimeter darkening on the front sheet. */
 .sheet-edge-aging {
   position: absolute;
   inset: 0;
@@ -526,53 +459,8 @@ body {
     inset 0 0 32px   rgba(62, 34, 6, 0.13);
 }
 
-/* 6. Torn edge masks: both off (no clip-path anywhere on front sheet) */
-.paper-torn,
-.paper-torn-strong {
-  -webkit-mask-image: none !important;
-          mask-image: none !important;
-  clip-path: none !important;
-}
-
-/* 7. Old helpers no longer in the DOM — kept as safety no-ops */
 .paper-corner,
 .paper-shadow,
 .paper-edge-aging {
-  display: none !important;
+  display: none;
 }
-
-/* 8. Crease / stamp / splat overlays: hidden — were mix-blend-mode multiply */
-.crease-v,
-.crease-h,
-.crease-diag,
-.stamp-circle,
-.ink-splat {
-  display: none !important;
-}
-
-/* 9. Halftone dot overlay: removed — was radial-gradient + mix-blend-mode on every photo */
-.halftone::after {
-  display: none !important;
-}
-
-/* 10. Folded-paper intro: no SVG texture */
-.folded-paper {
-  background-image: none !important;
-}
-
-/* 11. Continuous CSS animations: stopped — portrait-drift, portrait-blink, hint-bob
-       each fire compositor operations every frame even without user interaction */
-.portrait-drift {
-  animation: none !important;
-  transform: scale(1.02) !important;
-}
-.portrait-blink {
-  animation: none !important;
-}
-.hint-bob {
-  animation: none !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   END PERF TEST B
-   ═══════════════════════════════════════════════════════════════════════════ */
