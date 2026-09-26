@@ -7,39 +7,38 @@ const LINKS = [
 
 export default function Contact() {
   return (
-    <section id="contact" className="pt-12">
-      <div className="rule-double" />
-      <div className="mt-6 text-center">
-        <div className="section-label">FROM THE FRONT DESK</div>
-        <h3 className="mt-2 font-headline text-3xl font-black tracking-tight text-ink ink-print sm:text-4xl">
-          Contact the Editor
-        </h3>
-        <p className="mx-auto mt-2 max-w-xl font-meta text-base italic text-ink-soft">
-          Letters, briefs, and small commissions are welcome. Replies arrive on paper — or, more realistically, by email.
-        </p>
-      </div>
+    <section id="contact" className="mt-8 scroll-mt-6 border-t-[3px] border-double border-ink pt-4">
+      <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_1.3fr_auto] md:gap-8">
+        <div>
+          <div className="font-sans text-[10px] tracking-editorial text-ink-muted">FROM THE FRONT DESK</div>
+          <h3 className="mt-1 font-headline text-3xl font-black uppercase leading-none tracking-tight text-ink ink-print sm:text-4xl">
+            Contact the Editor
+          </h3>
+          <p className="mt-2 font-meta text-[14px] italic leading-snug text-ink-soft">
+            Letters, briefs, and small commissions are welcome. Replies arrive on paper — or, more realistically, by email.
+          </p>
+        </div>
 
-      <div className="mx-auto mt-6 max-w-2xl border-y border-ink">
-        {LINKS.map((l) => (
-          <a
-            key={l.label}
-            href={l.href}
-            target={l.href.startsWith('http') ? '_blank' : undefined}
-            rel="noreferrer"
-            className="grid grid-cols-12 items-baseline gap-3 border-b border-ink/40 py-3 last:border-b-0 hover:text-accent-burgundy"
-          >
-            <div className="col-span-3 font-sans text-[11px] tracking-editorial text-ink-muted">{l.label}</div>
-            <div className="col-span-8 font-serif text-[1.05rem] text-ink">{l.display}</div>
-            <div className="col-span-1 text-right font-sans text-xs tracking-editorial">→</div>
-          </a>
-        ))}
-      </div>
+        <div className="border-y border-ink">
+          {LINKS.map((l) => (
+            <a
+              key={l.label}
+              href={l.href}
+              target={l.href.startsWith('http') ? '_blank' : undefined}
+              rel="noreferrer"
+              className="grid grid-cols-[5.5rem_1fr_auto] items-baseline gap-3 border-b border-ink/30 py-1.5 last:border-b-0 hover:text-accent-burgundy"
+            >
+              <span className="font-sans text-[10px] tracking-editorial text-ink-muted">{l.label}</span>
+              <span className="font-serif text-[14px] text-ink">{l.display}</span>
+              <span className="font-sans text-xs">→</span>
+            </a>
+          ))}
+        </div>
 
-      <div className="mt-10 text-center">
-        <div className="mx-auto h-px w-32 bg-ink" />
-        <div className="mt-3 font-sans text-[11px] tracking-editorial text-ink-muted">END OF THE EDITION</div>
-        <div className="mt-1 font-meta text-sm italic text-ink-soft">VOL. 01 · 2026</div>
-        <div className="mx-auto mt-3 h-px w-32 bg-ink" />
+        <div className="text-center md:border-l md:border-ink/60 md:pl-8">
+          <div className="font-sans text-[10px] tracking-editorial text-ink-muted">END OF THE EDITION</div>
+          <div className="mt-1 font-headline text-2xl font-black tracking-tight text-ink">VOL. 01 · 2026</div>
+        </div>
       </div>
     </section>
   );

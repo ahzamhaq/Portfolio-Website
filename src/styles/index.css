@@ -86,26 +86,19 @@ body {
 /* ---------- Paper surface ---------- */
 /* Warm amber-yellow aged newsprint: richer than cream, cooler than ochre. */
 .paper-surface {
-  background-color: #E3C87A;
+  background-color: #dcc9a1;
   background-image:
-    /* central warm highlight — the part of the page most read/exposed */
-    radial-gradient(1000px 700px at 50% 26%, rgba(240, 218, 148, 0.52), transparent 60%),
-    /* broad warm amber mid-tone */
-    radial-gradient(1600px 1000px at 50% 62%, rgba(208, 162, 72, 0.30), transparent 70%),
-    /* irregular tonal blotches mimicking uneven aging */
-    radial-gradient(300px 220px at 22% 18%, rgba(132, 88, 22, 0.13), transparent 70%),
-    radial-gradient(380px 270px at 78% 66%, rgba(132, 88, 22, 0.13), transparent 70%),
-    radial-gradient(240px 190px at 12% 78%, rgba(132, 88, 22, 0.11), transparent 70%),
-    /* corner darkening — aged perimeter, heavier at bottom corners */
-    radial-gradient(140% 90% at 0% 0%,   rgba(90, 54, 8, 0.38), transparent 42%),
-    radial-gradient(140% 90% at 100% 0%, rgba(90, 54, 8, 0.38), transparent 42%),
-    radial-gradient(140% 90% at 0% 100%, rgba(90, 54, 8, 0.45), transparent 44%),
-    radial-gradient(140% 90% at 100% 100%, rgba(90, 54, 8, 0.45), transparent 44%),
-    /* fine paper grain — warm amber tint */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.34  0 0 0 0 0.23  0 0 0 0 0.07  0 0 0 0.16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
-    /* coarser fibre pass — visible paper texture */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.46  0 0 0 0 0.31  0 0 0 0 0.10  0 0 0 0.14 0'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
-  background-blend-mode: normal, normal, multiply, multiply, multiply, multiply, multiply, multiply, multiply, multiply, multiply;
+    radial-gradient(1000px 700px at 50% 22%, rgba(236, 222, 184, 0.55), transparent 62%),
+    radial-gradient(1600px 1000px at 50% 62%, rgba(190, 154, 88, 0.22), transparent 70%),
+    radial-gradient(300px 220px at 22% 18%, rgba(120, 84, 30, 0.10), transparent 70%),
+    radial-gradient(380px 270px at 78% 66%, rgba(120, 84, 30, 0.10), transparent 70%),
+    radial-gradient(140% 90% at 0% 0%,   rgba(84, 52, 14, 0.30), transparent 42%),
+    radial-gradient(140% 90% at 100% 0%, rgba(84, 52, 14, 0.30), transparent 42%),
+    radial-gradient(140% 90% at 0% 100%, rgba(84, 52, 14, 0.36), transparent 44%),
+    radial-gradient(140% 90% at 100% 100%, rgba(84, 52, 14, 0.36), transparent 44%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 0.30  0 0 0 0 0.22  0 0 0 0 0.10  0 0 0 0.17 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='c'><feTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='2' seed='9'/><feColorMatrix values='0 0 0 0 0.40  0 0 0 0 0.29  0 0 0 0 0.12  0 0 0 0.14 0'/></filter><rect width='100%' height='100%' filter='url(%23c)'/></svg>");
+  background-blend-mode: normal, normal, multiply, multiply, multiply, multiply, multiply, multiply, multiply, multiply;
 }
 
 /* Discoloration overlay — low-frequency tonal variation for uneven aging. */
@@ -116,7 +109,7 @@ body {
   background-image:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='1600'><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='2' seed='12'/><feColorMatrix values='0 0 0 0 0.50  0 0 0 0 0.30  0 0 0 0 0.08  0 0 0 0.40 0'/></filter><rect width='100%' height='100%' filter='url(%23b)'/></svg>");
   mix-blend-mode: multiply;
-  opacity: 0.58;
+  opacity: 0.4;
   z-index: 2;
 }
 
@@ -415,7 +408,7 @@ html { scroll-behavior: smooth; }
   left: 0;
   right: -16px;
   bottom: -30px;
-  background-color: #B8966A;
+  background-color: #a48a64;
   transform: rotate(1.4deg);
   transform-origin: 50% 0%;
   z-index: 1;
@@ -430,7 +423,7 @@ html { scroll-behavior: smooth; }
   left: -18px;
   right: 0;
   bottom: -22px;
-  background-color: #CCB07C;
+  background-color: #bea57d;
   transform: rotate(-1.0deg);
   transform-origin: 50% 0%;
   z-index: 2;
@@ -464,3 +457,71 @@ html { scroll-behavior: smooth; }
 .paper-edge-aging {
   display: none;
 }
+
+/* ── Burnt / deckled paper edges (alpha textures) ─────────────────────────── */
+.paper-edge-layer {
+  position: absolute;
+  pointer-events: none;
+  z-index: 6;
+  background-repeat: no-repeat;
+  mix-blend-mode: multiply;
+}
+.paper-edge-layer--top    { top: 0; left: 0; right: 0; height: 46px; background-image: url('/textures/paper-edge-top.webp');    background-size: 100% 100%; }
+.paper-edge-layer--bottom { bottom: 0; left: 0; right: 0; height: 46px; background-image: url('/textures/paper-edge-bottom.webp'); background-size: 100% 100%; }
+.paper-edge-layer--left   { top: 0; bottom: 0; left: 0; width: 40px; background-image: url('/textures/paper-edge-left.webp');   background-size: 100% 100%; }
+.paper-edge-layer--right  { top: 0; bottom: 0; right: 0; width: 40px; background-image: url('/textures/paper-edge-right.webp');  background-size: 100% 100%; }
+
+/* ── Masthead type ────────────────────────────────────────────────────────── */
+.masthead-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+.masthead-title .the {
+  font-family: 'UnifrakturCook', 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.08em;
+  margin-right: 0.12em;
+}
+.nav-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: 0.08em;
+}
+
+/* ── Index tab ────────────────────────────────────────────────────────────── */
+.index-tab {
+  position: absolute;
+  top: 340px;
+  right: -1px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  background: #cdb88c;
+  border: 1px solid rgba(26, 22, 17, 0.55);
+  border-right: 0;
+  box-shadow: -2px 2px 6px rgba(0, 0, 0, 0.35);
+  writing-mode: vertical-rl;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: #1a1611;
+  text-decoration: none;
+}
+
+/* ── Rubber stamp ─────────────────────────────────────────────────────────── */
+.stamp-round {
+  width: 92px; height: 92px; border-radius: 50%;
+  border: 2px solid rgba(107, 31, 20, 0.6);
+  color: rgba(107, 31, 20, 0.7);
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.25;
+  transform: rotate(-14deg);
+  mix-blend-mode: multiply;
+  position: relative;
+}
+.stamp-round::before { content: ''; position: absolute; inset: 5px; border-radius: 50%; border: 1px solid rgba(107, 31, 20, 0.45); }

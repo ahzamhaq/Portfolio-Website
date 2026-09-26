@@ -4,14 +4,14 @@ import { ManiculeRight } from './PaperDecor.jsx';
 
 export default function FeaturedProject() {
   return (
-    <section id="work" className="pt-12">
-      <div className="rule-double" />
+    <section id="work" className="scroll-mt-6 pt-8">
+      <div className="border-t-[3px] border-double border-ink" />
       <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2">
         <div className="section-label">{p.section}</div>
         <div className="font-sans text-[10px] tracking-editorial text-ink-muted">PAGE B1</div>
       </div>
 
-      <h3 className="mt-2 font-headline text-[2rem] font-black leading-[1] tracking-tight text-ink ink-print sm:text-[2.6rem] md:text-[3.2rem]">
+      <h3 className="mt-2 font-headline text-[1.6rem] font-black uppercase leading-[1.05] tracking-[0.04em] text-ink ink-print sm:text-[2.1rem] md:text-[2.4rem]">
         {p.headline}
       </h3>
       <div className="mt-2 font-meta text-lg italic text-ink-soft">{p.title} — {p.dek}</div>

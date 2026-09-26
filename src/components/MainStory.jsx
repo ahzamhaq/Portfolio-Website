@@ -2,7 +2,7 @@ import Portrait from './Portrait.jsx';
 
 export default function MainStory() {
   return (
-    <section className="grid grid-cols-1 gap-6 pt-8 md:grid-cols-12 md:gap-8 md:pt-10">
+    <section id="top-story" className="grid scroll-mt-6 grid-cols-1 gap-6 pt-6 md:grid-cols-12 md:gap-8 md:pt-8">
       {/* Left column — the story */}
       <div className="md:col-span-8">
         <div className="section-label">LEAD STORY</div>

@@ -1,12 +1,47 @@
 import { Fleuron } from './PaperDecor.jsx';
 
 const NAV = [
-  { label: 'ABOUT', href: '#about' },
+  { label: 'ABOUT', href: '#top-story' },
   { label: 'WORK', href: '#work' },
   { label: 'EXPERIENCE', href: '#experience' },
   { label: 'SKILLS', href: '#skills' },
   { label: 'CONTACT', href: '#contact' },
 ];
+
+function Sunburst({ className = 'h-9 w-9' }) {
+  const rays = Array.from({ length: 16 }, (_, i) => i * 22.5);
+  return (
+    <svg viewBox="-20 -20 40 40" className={className} aria-hidden>
+      <g stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+        {rays.map((a) => (
+          <line key={a} x1="0" y1="-7" x2="0" y2={a % 45 === 0 ? -17 : -12} transform={`rotate(${a})`} />
+        ))}
+      </g>
+      <circle r="4" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function Monogram({ className = 'h-9 w-9' }) {
+  return (
+    <span className={`inline-flex items-center justify-center font-display text-3xl leading-none ${className}`} aria-hidden>
+      AH
+    </span>
+  );
+}
+
+function Manicule({ flip = false }) {
+  return (
+    <svg viewBox="0 0 40 20" className="h-5 w-10" aria-hidden style={flip ? { transform: 'scaleX(-1)' } : undefined}>
+      <g fill="currentColor">
+        <path d="M2 9 H12 L14 6 H24 L26 8 H33 L37 10 L33 12 H26 L24 14 H14 L12 11 H2 Z" />
+      </g>
+      <g stroke="#dcc9a1" strokeWidth="0.8" fill="none">
+        <path d="M14 8 H23 M14 12 H23" />
+      </g>
+    </svg>
+  );
+}
 
 export default function Masthead() {
   const today = new Date().toLocaleDateString('en-GB', {
@@ -15,54 +50,61 @@ export default function Masthead() {
     month: 'long',
     year: 'numeric',
   });
+  const [weekday, ...rest] = today.replace(',', '').split(' ');
 
   return (
-    <header className="relative pt-6 sm:pt-10">
-      {/* top metadata strip */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink pb-2 text-[10px] font-sans tracking-editorial text-ink-muted sm:text-[11px]">
-        <span>VOL. 01 · NO. 01</span>
-        <span className="hidden sm:block">EST. 2026 · NEW DELHI · WEB</span>
-        <span>{today.toUpperCase()}</span>
-      </div>
-
-      {/* masthead */}
-      <div className="pt-6 text-center">
-        <div className="section-label">SPECIAL DEVELOPER EDITION</div>
-
-        <div className="mx-auto mt-2 flex max-w-md items-center justify-center gap-3 text-ink-muted">
-          <span className="h-px flex-1 bg-ink-muted/50" />
-          <Fleuron className="h-3 w-3" />
-          <span className="h-px flex-1 bg-ink-muted/50" />
+    <header className="relative pt-2">
+      {/* top strip: issue info · special edition + monogram · date */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
+        <div className="font-sans text-[10px] leading-[1.6] tracking-editorial text-ink sm:text-[11px]">
+          <div>VOL. 01 · NO. 01</div>
+          <div>NEW DELHI · WEB</div>
         </div>
 
-        <h1 className="mt-3 font-headline text-[3.2rem] font-black leading-[0.88] tracking-tight text-ink ink-print sm:text-[5.4rem] md:text-[7rem]">
-          The Ahzam Haque
-        </h1>
-
-        <div className="mx-auto mt-4 flex max-w-xl items-center justify-center gap-3 text-[11px] font-sans tracking-editorial text-ink-muted sm:text-xs">
-          <span className="h-px flex-1 bg-ink-muted/50" />
-          <span>COMPUTER SCIENCE · SOFTWARE · AI</span>
-          <span className="h-px flex-1 bg-ink-muted/50" />
+        <div className="flex flex-col items-center text-ink">
+          <div className="font-sans text-[10px] tracking-editorial sm:text-[11px]">SPECIAL EDITION</div>
+          <div className="mt-1 flex items-center gap-3">
+            <span className="hidden text-ink-muted sm:inline"><Fleuron className="h-3 w-3" /></span>
+            <Monogram />
+            <span className="hidden text-ink-muted sm:inline"><Fleuron className="h-3 w-3" /></span>
+          </div>
         </div>
-        <div className="mt-2 font-meta text-sm italic text-ink-soft sm:text-base">
-          The Chronicle of a Developer in Progress · Price: One Curious Reader
+
+        <div className="flex items-start justify-end gap-3 text-right font-sans text-[10px] leading-[1.6] tracking-editorial text-ink sm:text-[11px]">
+          <div>
+            <div>{weekday.toUpperCase()},</div>
+            <div>{rest.join(' ').toUpperCase()}</div>
+          </div>
+          <Sunburst className="hidden h-9 w-9 text-ink-soft sm:block" />
         </div>
       </div>
 
-      {/* integrated navigation */}
-      <nav className="mt-6 border-y-2 border-ink py-2">
-        <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-sans text-[11px] tracking-editorial text-ink sm:gap-x-8 sm:text-xs">
-          <li className="hidden text-ink-muted sm:inline"><Fleuron className="h-2.5 w-2.5" /></li>
+      {/* nameplate */}
+      <h1 className="masthead-title mt-3 text-center text-[2.1rem] text-ink ink-print min-[420px]:text-[2.7rem] sm:text-[4rem] md:text-[5.2rem] lg:text-[5.9rem]">
+        <span className="the">The</span> Ahzam Haque
+      </h1>
+
+      <div className="mt-2 text-center font-headline text-[11px] tracking-[0.32em] text-ink sm:text-base">
+        COMPUTER SCIENCE · SOFTWARE · AI
+      </div>
+      <div className="mt-1 text-center font-meta text-sm italic text-ink-soft sm:text-base">
+        The Chronicle of a Developer in Progress · Price: One Curious Reader
+      </div>
+
+      {/* navigation with pointing hands */}
+      <nav className="mt-5 flex items-center gap-3 border-y-[3px] border-double border-ink py-2 text-ink">
+        <span className="hidden sm:block"><Manicule /></span>
+        <ul className="nav-serif flex flex-1 flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[12px] sm:justify-around sm:text-[15px]">
           {NAV.map((item, i) => (
-            <li key={item.href} className="flex items-center gap-4 sm:gap-8">
-              <a href={item.href} className="hover:text-accent-burgundy transition-colors">
+            <li key={item.href} className="flex items-center gap-3">
+              <a href={item.href} className="transition-colors hover:text-accent-burgundy">
                 {item.label}
               </a>
-              {i < NAV.length - 1 && <span className="text-ink-faded">·</span>}
+              {i < NAV.length - 1 && <span className="hidden text-ink-faded sm:inline">·</span>}
             </li>
           ))}
-          <li className="hidden text-ink-muted sm:inline"><Fleuron className="h-2.5 w-2.5" /></li>
         </ul>
+        <span className="hidden sm:block"><Manicule flip /></span>
       </nav>
     </header>
   );
